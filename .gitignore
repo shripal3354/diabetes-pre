@@ -1,0 +1,48 @@
+Step 1: Import relevant libraries
+Standard libraries of Pandas and Numpy are imported, along with visualisation libraries of Matplotlib and Seaborn. There are also a host of models and measurement metrics imported from Scikit-Learn library.
+Step 2: Read in data, perform Exploratory Data Analysis (EDA)
+Use Pandas to read the csv file “diabetes.csv”. There are 768 observations with 8 medical predictor features (input) and 1 target variable (output 0 for ”no diabetes” or 1 for ”yes”). Let’s check the target variable distribution:
+
+df = pd.read_csv('diabetes.csv')
+print(df.Outcome.value_counts())
+df['Outcome'].value_counts().plot('bar').set_title('Diabetes Outcome')
+
+The 8 medical predictor features are:
+· Pregnancies: Number of times pregnant
+· Glucose: Plasma glucose concentration a 2 hours in an oral glucose tolerance test
+· BloodPressure: Diastolic blood pressure (mm Hg)
+· SkinThickness: Triceps skin fold thickness (mm)
+· Insulin: 2-Hour serum insulin (mu U/ml)
+· BMI: Body Mass Index (weight in kg/(height in m)²)
+· DiabetesPedigreeFunction: Diabetes pedigree function on genetic influence and hereditary risk
+· Age: Age (years)
+Let’s visualise the distribution of these 8 features.
+features = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age']
+ROWS, COLS = 2, 4
+fig, ax = plt.subplots(ROWS, COLS, figsize=(18,8) )
+row, col = 0, 0
+for i, feature in enumerate(features):
+    if col == COLS - 1:
+        row += 1
+    col = i % COLS
+    
+    df[feature].hist(bins=35, color='green', alpha=0.5, ax=ax[row, col]).set_title(feature)  
+
+Step 3: Create feature (X) and target (y) dataset
+The notations X and y are commonly used in Scikit-Learn. I have also used Random Forest Classifier to check feature importance. ‘Glucose’ and ‘BMI’ are the most important medical predictor features.
+X, y = df.drop('Outcome', axis=1), df['Outcome']
+rfc = RandomForestClassifier(random_state=SEED, n_estimators=100)
+rfc_model = rfc.fit(X, y)
+(pd.Series(rfc_model.feature_importances_, index=X.columns)
+    .nlargest(8)
+    .plot(kind='barh', figsize=[8,4])
+    .invert_yaxis())
+plt.yticks(size=15)
+plt.title('Top Features derived by Random Forest', size=20)
+
+Step 4: Split data to 80:20 ratio, and perform Model Selection
+The standard code to split data for training and testing:
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.2, random_state=SEED, stratify=y)
+
+
